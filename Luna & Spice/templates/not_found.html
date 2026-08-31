@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block body %}
+<div class="none">
+  <p>We can't find that reservation. It may already have been cancelled.</p>
+  <a class="btn btn--brass" href="{{ url_for('reserve') }}">Reserve a table</a>
+</div>
+{% endblock %}

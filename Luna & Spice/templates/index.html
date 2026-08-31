@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}The rooms{% endblock %}
+{% block body %}
+<section class="lead">
+  <p class="tag">Reservations open ten days ahead</p>
+  <h1>Three rooms,<br>one kitchen.</h1>
+  <p class="lead__text">Choose where you want to sit before you choose when. Each room keeps its own covers, so what you see on the next page is what's actually free.</p>
+  <a class="btn btn--brass" href="{{ url_for('reserve') }}">Reserve a table</a>
+</section>
+
+<section class="rooms">
+  {% for a in areas %}
+  <article class="room">
+    <h2 class="room__name">{{ a.name }}</h2>
+    <p class="room__blurb">{{ a.blurb }}</p>
+    <dl class="room__facts">
+      <div><dt>Covers</dt><dd>{{ a.covers }}</dd></div>
+      <div><dt>Largest party</dt><dd>{{ a.max_party }}</dd></div>
+    </dl>
+    <a class="room__link" href="{{ url_for('reserve', area=a.id) }}">Check this room &rarr;</a>
+  </article>
+  {% endfor %}
+</section>
+
+<section class="kitchen">
+  <h2 class="rule-head"><span>From the kitchen</span></h2>
+  <dl class="kitchen__list">
+    {% for title, note in menu_notes %}
+    <div><dt>{{ title }}</dt><dd>{{ note }}</dd></div>
+    {% endfor %}
+  </dl>
+</section>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}The book{% endblock %}
+{% block body %}
+<div class="book-head">
+  <h1 class="page-title">The book</h1>
+  {% if rows %}<p class="tag">{{ rows|length }} reservations &middot; {{ total }} covers</p>{% endif %}
+</div>
+{% if not rows %}
+<div class="none">
+  <p>The book is empty. First table of the service is yours.</p>
+  <a class="btn btn--brass" href="{{ url_for('reserve') }}">Reserve a table</a>
+</div>
+{% else %}
+<ul class="book">
+  {% for r in rows %}
+  <li class="line">
+    <span class="line__time">{{ r.res_time }}<em>{{ r.res_date | short_date }}</em></span>
+    <span class="line__party" aria-label="{{ r.party }} guests">{{ r.party }}<em>covers</em></span>
+    <span class="line__guest">{{ r.guest }}<em>{{ r.phone }}</em></span>
+    <span class="line__room">{{ areas[r.area_id].name }}{% if r.occasion and r.occasion != 'Just dinner' %}<em>{{ r.occasion }}</em>{% endif %}</span>
+    <span class="line__req">{{ r.requests or '&mdash;' | safe }}</span>
+    <form method="post" action="{{ url_for('cancel', res_id=r.id) }}">
+      <button class="drop">Cancel</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

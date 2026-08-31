@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Reserve a table{% endblock %}
+{% block body %}
+<h1 class="page-title">Reserve a table</h1>
+
+<form method="get" class="setup">
+  <input type="hidden" name="day" value="{{ chosen_day }}">
+  <input type="hidden" name="party" value="{{ party }}">
+  <p class="rule-head"><span>Where you'll sit</span></p>
+  <div class="roomchoice">
+    {% for a in areas.values() %}
+    <button class="rc {% if a.id == area.id %}is-on{% endif %}" name="area" value="{{ a.id }}">
+      <span class="rc__name">{{ a.name }}</span>
+      <span class="rc__meta">{{ a.covers }} covers &middot; up to {{ a.max_party }}</span>
+      <span class="rc__blurb">{{ a.blurb }}</span>
+    </button>
+    {% endfor %}
+  </div>
+</form>
+
+<section class="party">
+  <div class="party__viz">
+    <div class="tabletop" aria-hidden="true">
+      <span class="tabletop__n">{{ party }}</span>
+      {% for i in range(party) %}
+        <span class="seat" style="--a: {{ (360 * i) // party }}deg"></span>
+      {% endfor %}
+    </div>
+    <p class="party__caption">{{ party }} {{ 'guest' if party == 1 else 'guests' }} at the {{ area.name | lower }}</p>
+  </div>
+  <form method="get" class="party__pick">
+    <input type="hidden" name="area" value="{{ area.id }}">
+    <input type="hidden" name="day" value="{{ chosen_day }}">
+    <p class="rule-head"><span>How many of you</span></p>
+    <div class="counts">
+      {% for n in range(1, area.max_party + 1) %}
+      <button class="count {% if n == party %}is-on{% endif %}" name="party" value="{{ n }}">{{ n }}</button>
+      {% endfor %}
+    </div>
+    <p class="small">The {{ area.name | lower }} seats parties up to {{ area.max_party }}. For anything larger, call us.</p>
+  </form>
+</section>
+
+<form method="get" class="daystrip" aria-label="Choose a date">
+  <input type="hidden" name="area" value="{{ area.id }}">
+  <input type="hidden" name="party" value="{{ party }}">
+  {% for d in days %}
+    {% set iso = d.isoformat() %}
+    <button class="dcell {% if iso == chosen_day %}is-on{% endif %}" name="day" value="{{ iso }}">
+      <span class="dcell__dow">{{ d.strftime('%a') }}</span>
+      <span class="dcell__num">{{ d.strftime('%d') }}</span>
+      <span class="dcell__mon">{{ d.strftime('%b') }}</span>
+    </button>
+  {% endfor %}
+</form>
+
+<form method="post" class="finish">
+  <input type="hidden" name="area" value="{{ area.id }}">
+  <input type="hidden" name="party" value="{{ party }}">
+  <input type="hidden" name="day" value="{{ chosen_day }}">
+
+  <section>
+    <p class="rule-head"><span>{{ chosen_day | pretty_date }}</span></p>
+    {% for label, rows in sittings %}
+    <fieldset class="sitting">
+      <legend>{{ label }}</legend>
+      <div class="sits">
+        {% for s in rows %}
+        <label class="sit {% if not s.open %}sit--full{% endif %}">
+          <input type="radio" name="res_time" value="{{ s.time }}" {% if not s.open %}disabled{% endif %}
+                 {% if form.get('res_time') == s.time %}checked{% endif %}>
+          <span class="sit__time">{{ s.time }}</span>
+          <span class="sit__left">
+            {% if s.left <= 0 %}full
+            {% elif s.open %}{{ s.left }} covers left
+            {% else %}seats {{ s.left }} only{% endif %}
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    {% endfor %}
+  </section>
+
+  <section class="guest">
+    <p class="rule-head"><span>Who we're holding it for</span></p>
+    <div class="field">
+      <label for="guest">Name on the reservation</label>
+      <input id="guest" name="guest" required value="{{ form.get('guest','') }}" autocomplete="name">
+    </div>
+    <div class="field">
+      <label for="phone">Mobile number</label>
+      <input id="phone" name="phone" required inputmode="tel" value="{{ form.get('phone','') }}" autocomplete="tel">
+    </div>
+    <div class="field">
+      <label for="email">Email <span class="opt">optional</span></label>
+      <input id="email" name="email" type="email" value="{{ form.get('email','') }}" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="occasion">Occasion</label>
+      <select id="occasion" name="occasion">
+        {% for o in occasions %}<option {% if form.get('occasion') == o %}selected{% endif %}>{{ o }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="requests">Allergies or requests <span class="opt">optional</span></label>
+      <textarea id="requests" name="requests" rows="3" placeholder="Nut allergy, high chair, quiet corner, no candles.">{{ form.get('requests','') }}</textarea>
+    </div>
+    <button class="btn btn--brass btn--block" type="submit">Hold this table</button>
+    <p class="small">We'll text to confirm. Cancel any time up to two hours before.</p>
+  </section>
+</form>
+{% endblock %}

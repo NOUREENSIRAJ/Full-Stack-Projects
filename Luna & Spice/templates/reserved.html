@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Table reserved{% endblock %}
+{% block body %}
+<section class="ticket">
+  <p class="tag">Reserved &middot; {{ r.ref }}</p>
+  <h1>{{ r.party }} at {{ r.res_time }}, {{ r.res_date | pretty_date }}.</h1>
+  <dl class="ticket__grid">
+    <div><dt>Room</dt><dd>{{ area.name }}</dd></div>
+    <div><dt>Under the name</dt><dd>{{ r.guest }}</dd></div>
+    <div><dt>Party</dt><dd>{{ r.party }} {{ 'guest' if r.party == 1 else 'guests' }}</dd></div>
+    <div><dt>Occasion</dt><dd>{{ r.occasion }}</dd></div>
+    <div><dt>Mobile</dt><dd>{{ r.phone }}</dd></div>
+    {% if r.email %}<div><dt>Email</dt><dd>{{ r.email }}</dd></div>{% endif %}
+  </dl>
+  {% if r.requests %}<p class="ticket__req"><span>Passed to the kitchen</span>{{ r.requests }}</p>{% endif %}
+  <div class="ticket__actions">
+    <a class="btn btn--brass" href="{{ url_for('book_list') }}">See the book</a>
+    <a class="btn btn--outline" href="{{ url_for('reserve') }}">Reserve another table</a>
+  </div>
+</section>
+{% endblock %}
