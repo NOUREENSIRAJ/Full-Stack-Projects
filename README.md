@@ -2,7 +2,8 @@
 
 Full-stack web apps built with Flask, SQLite and Jinja templates.
 
-Project	What it does	Stack
+Project	What it does Stack
+
 luna-spice:Restaurant table reservations with per-room capacity, so a room fills up instead of overbooking	Flask · SQLite · Jinja · CSS
 gloss-salon-booking:Salon appointment booking with services and time slots	Flask · SQLite · Jinja · CSS
 gloss-salon-static:Static front-end version of the Gloss salon site	HTML · CSS
