@@ -1,0 +1,70 @@
+# .gitignore — Full-Stack-Projects
+#
+# Repo ke root par rakhein (kisi project folder ke andar nahi).
+# Ye har project par lagoo hoga: WellCrest, Luna & Spice,
+# gloss-salon-booking, gloss-salon-static, aur aage jo bhi add ho.
+
+# --- Databases -------------------------------------------------------------
+# wellcrest.db mein patients ke naam aur phone numbers hain.
+# luna_spice.db mein guests ke naam, phone aur email hain.
+# Dono apps pehli baar chalne par nayi database khud bana leti hain.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.Python
+
+# --- Virtual environments --------------------------------------------------
+venv/
+.venv/
+env/
+ENV/
+Scripts/
+pyvenv.cfg
+
+# --- Flask -----------------------------------------------------------------
+instance/
+.webassets-cache
+*.log
+flask_session/
+
+# --- Secrets ---------------------------------------------------------------
+# app.secret_key ko environment variable se uthayein to .env yahin rukega.
+.env
+.env.*
+secrets.json
+config.local.py
+
+# --- Node (agar kisi project mein use ho) ----------------------------------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.parcel-cache/
+
+# --- Editors ---------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Windows / macOS -------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+desktop.ini
+.DS_Store
+$RECYCLE.BIN/
+
+# --- Misc ------------------------------------------------------------------
+*.bak
+*.tmp
+~$*
