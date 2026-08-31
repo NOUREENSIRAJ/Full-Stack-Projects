@@ -2,7 +2,7 @@
 
 Full-stack web apps built with Flask, SQLite and Jinja templates.
 
-Project	What it does Stack
+## Projects: What it does 
 
 luna-spice:Restaurant table reservations with per-room capacity, so a room fills up instead of overbooking	Flask · SQLite · Jinja · CSS
 
@@ -14,7 +14,7 @@ medislot:Doctor appointment booking	Flask · SQLite · Jinja · CSS
 
 Each project folder has its own README, screenshots and setup instructions.
 
-Running any of these locally
+## Running any of these locally
 
 bash
 
