@@ -18,7 +18,8 @@ still open today.
 **Token slip** — what the patient gets after booking. The page is styled to print
 cleanly on white paper.
 
-![Token slip] <img width="1551" height="907" alt="Screenshot wellcrest 1" src="https://github.com/user-attachments/assets/830dc726-c4a4-436b-85ac-7abfd96af656" />
+![Token slip] <img width="1605" height="902" alt="Screenshot wellcrest" src="https://github.com/user-attachments/assets/61d11df3-a1e3-4fcf-afe8-857a55a39ad0" />
+
 
 
 ## What it does
