@@ -12,12 +12,14 @@ Built with Flask and SQLite.
 **Doctor panel** — the five consultants on duty, their fees, and how many slots are
 still open today.
 
-![Doctor panel](screenshots/home.png)
+![Doctor panel] <img width="1551" height="907" alt="Screenshot wellcrest 1" src="https://github.com/user-attachments/assets/b40ae6a2-68c6-49c0-bb18-db21bf23770d" />
+
 
 **Token slip** — what the patient gets after booking. The page is styled to print
 cleanly on white paper.
 
-![Token slip](screenshots/token-slip.png)
+![Token slip] <img width="1551" height="907" alt="Screenshot wellcrest 1" src="https://github.com/user-attachments/assets/830dc726-c4a4-436b-85ac-7abfd96af656" />
+
 
 ## What it does
 
