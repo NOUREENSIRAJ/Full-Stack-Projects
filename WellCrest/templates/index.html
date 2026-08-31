@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Book an OPD appointment — {{ clinic.name }}{% endblock %}
+
+{% block body %}
+<section class="hero">
+  <h1>Pick a doctor, pick a slot,<br>walk in with a token.</h1>
+  <p class="hero-sub">
+    {{ clinic.tagline }} Consultations run every 20 minutes at
+    {{ clinic.address }}. Call {{ clinic.phone }} if you need help booking.
+  </p>
+  <p class="hero-meta">{{ doctors|length }} consultants on the panel today, {{ today|pretty_date }}.</p>
+</section>
+
+<ul class="doctors">
+  {% for d in doctors %}
+  <li class="doctor">
+    <div class="doctor-head">
+      <span class="dept-tag">{{ d.dept }}</span>
+      <span class="fee">{{ d.fee|rs }}</span>
+    </div>
+
+    <h2><a href="{{ url_for('book', doctor_id=d.id) }}">{{ d.name }}</a></h2>
+    <p class="qual">{{ d.qual }} · {{ d.years }} years in practice</p>
+    <p class="note">{{ d.note }}</p>
+
+    <div class="doctor-foot">
+      <span class="room">Room {{ d.room }}</span>
+      {% if d.free_today > 0 %}
+        <span class="free">{{ d.free_today }} of {{ d.total_today }} slots open today</span>
+      {% else %}
+        <span class="free full">Fully booked today</span>
+      {% endif %}
+      <a class="btn" href="{{ url_for('book', doctor_id=d.id) }}">Book appointment</a>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

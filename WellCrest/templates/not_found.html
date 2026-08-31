@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Page not found — {{ clinic.name }}{% endblock %}
+
+{% block body %}
+<div class="empty">
+  <h1>That page isn't here</h1>
+  <p>The doctor or token you asked for doesn't exist. It may have been cancelled.</p>
+  <a class="btn" href="{{ url_for('index') }}">Go to the doctor list</a>
+  <p class="fineprint">Still stuck? Call reception at {{ clinic.phone }}.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Token {{ a.token }} — {{ clinic.name }}{% endblock %}
+
+{% block body %}
+<p class="confirm-line">Appointment confirmed. Show this token at the reception desk.</p>
+
+<article class="slip">
+  <header class="slip-top">
+    <div>
+      <b>{{ clinic.name }}</b>
+      <p>{{ clinic.address }} · {{ clinic.phone }}</p>
+    </div>
+    <span class="slip-kind">OPD token</span>
+  </header>
+
+  <div class="slip-token">
+    <span>Token number</span>
+    <strong>{{ a.token }}</strong>
+  </div>
+
+  <dl class="slip-grid">
+    <div>
+      <dt>Patient</dt>
+      <dd>{{ a.patient }}{% if a.age %}, {{ a.age }} yrs{% endif %}</dd>
+    </div>
+    <div>
+      <dt>Mobile</dt>
+      <dd>{{ a.phone }}</dd>
+    </div>
+    <div>
+      <dt>Doctor</dt>
+      <dd>{{ doctor.name if doctor else a.doctor_id }}</dd>
+    </div>
+    <div>
+      <dt>Department</dt>
+      <dd>{{ doctor.dept if doctor else '—' }}</dd>
+    </div>
+    <div>
+      <dt>Date</dt>
+      <dd>{{ a.slot_date|pretty_date }}</dd>
+    </div>
+    <div>
+      <dt>Reporting time</dt>
+      <dd>{{ a.slot_time }}</dd>
+    </div>
+    <div>
+      <dt>Room</dt>
+      <dd>{{ doctor.room if doctor else '—' }}</dd>
+    </div>
+    <div>
+      <dt>Fee payable</dt>
+      <dd>{{ doctor.fee|rs if doctor else '—' }}</dd>
+    </div>
+    <div>
+      <dt>Reason</dt>
+      <dd>{{ a.reason or 'First visit' }}</dd>
+    </div>
+  </dl>
+
+  {% if a.notes %}
+    <p class="slip-notes"><span>Notes for the doctor</span>{{ a.notes }}</p>
+  {% endif %}
+
+  <footer class="slip-foot">
+    Arrive 10 minutes early with the fee and any previous reports.
+    To cancel or reschedule, call {{ clinic.phone }}.
+  </footer>
+</article>
+
+<div class="confirm-actions">
+  <button class="btn" type="button" onclick="window.print()">Print this slip</button>
+  <a class="btn btn-quiet" href="{{ url_for('index') }}">Book another appointment</a>
+  <a class="btn btn-quiet" href="{{ url_for('appointments') }}">View all appointments</a>
+</div>
+{% endblock %}

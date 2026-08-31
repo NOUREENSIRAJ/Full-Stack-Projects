@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Front desk — {{ clinic.name }}{% endblock %}
+
+{% block body %}
+<section class="hero hero-tight">
+  <h1>Front desk</h1>
+  <p class="hero-sub">Every booked appointment at {{ clinic.address }}, earliest first.</p>
+</section>
+
+{% if rows %}
+<div class="table-scroll">
+  <table class="ledger">
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Patient</th>
+        <th>Mobile</th>
+        <th>Doctor</th>
+        <th>Fee</th>
+        <th>Reason</th>
+        <th><span class="sr-only">Action</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+        {% set doc = doctors.get(r.doctor_id) %}
+        <tr>
+          <td class="mono">{{ r.token }}</td>
+          <td>{{ r.slot_date|pretty_date }}</td>
+          <td class="mono">{{ r.slot_time }}</td>
+          <td>{{ r.patient }}{% if r.age %} <small>({{ r.age }})</small>{% endif %}</td>
+          <td class="mono">{{ r.phone }}</td>
+          <td>
+            {{ doc.name if doc else r.doctor_id }}
+            <small>{{ doc.dept if doc else '' }}</small>
+          </td>
+          <td>{{ doc.fee|rs if doc else '—' }}</td>
+          <td>{{ r.reason or '—' }}</td>
+          <td>
+            <form method="post" action="{{ url_for('cancel', appt_id=r.id) }}">
+              <button class="link-danger" type="submit">Cancel</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty">
+  <p>No appointments booked yet.</p>
+  <a class="btn" href="{{ url_for('index') }}">Book the first one</a>
+</div>
+{% endif %}
+{% endblock %}

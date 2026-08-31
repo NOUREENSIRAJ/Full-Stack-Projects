@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Book {{ doctor.name }} — {{ clinic.name }}{% endblock %}
+
+{% block body %}
+<a class="back" href="{{ url_for('index') }}">Back to all doctors</a>
+
+<section class="doc-banner">
+  <div>
+    <span class="dept-tag">{{ doctor.dept }}</span>
+    <h1>{{ doctor.name }}</h1>
+    <p class="qual">{{ doctor.qual }} · Room {{ doctor.room }} · {{ doctor.years }} years in practice</p>
+    <p class="note">{{ doctor.note }}</p>
+  </div>
+  <div class="doc-fee">
+    <span>Consultation fee</span>
+    <b>{{ doctor.fee|rs }}</b>
+    <small>Payable at reception</small>
+  </div>
+</section>
+
+<form class="daybar" method="get">
+  {% for d in days %}
+    {% set value = d.isoformat() %}
+    <button type="submit" name="day" value="{{ value }}"
+            class="day {% if value == chosen_day %}day-on{% endif %}"
+            {% if value == chosen_day %}aria-current="date"{% endif %}>
+      <span class="day-wd">{{ d.strftime('%a') }}</span>
+      <span class="day-dd">{{ d.strftime('%d') }}</span>
+      <span class="day-mo">{{ d.strftime('%b') }}</span>
+    </button>
+  {% endfor %}
+</form>
+
+<form class="booking" method="post" action="{{ url_for('book', doctor_id=doctor.id) }}">
+  <input type="hidden" name="day" value="{{ chosen_day }}">
+
+  <fieldset class="slots">
+    <legend>Choose a time on {{ chosen_day|pretty_date }}</legend>
+
+    {% for label, times in sessions %}
+      <div class="session">
+        <h3>{{ label }}</h3>
+        <div class="slot-grid">
+          {% for t in times %}
+            {% if t in booked %}
+              <span class="slot slot-taken" aria-disabled="true">{{ t }}<em>booked</em></span>
+            {% else %}
+              <label class="slot">
+                <input type="radio" name="slot_time" value="{{ t }}"
+                       {% if form.get('slot_time') == t %}checked{% endif %}>
+                <span>{{ t }}</span>
+              </label>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </fieldset>
+
+  <fieldset class="patient">
+    <legend>Patient details</legend>
+
+    <label class="field">
+      <span>Full name</span>
+      <input type="text" name="patient" value="{{ form.get('patient', '') }}"
+             placeholder="As written on the CNIC or B-form" required>
+    </label>
+
+    <div class="row">
+      <label class="field">
+        <span>Age</span>
+        <input type="number" name="age" min="0" max="120"
+               value="{{ form.get('age', '') }}" placeholder="34">
+      </label>
+
+      <label class="field">
+        <span>Mobile number</span>
+        <input type="tel" name="phone" value="{{ form.get('phone', '') }}"
+               placeholder="0300 1234567" required>
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Reason for visit</span>
+      <select name="reason">
+        {% for r in reasons %}
+          <option value="{{ r }}" {% if form.get('reason') == r %}selected{% endif %}>{{ r }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Anything the doctor should know</span>
+      <textarea name="notes" rows="3"
+                placeholder="Current medicines, allergies, reports you are bringing">{{ form.get('notes', '') }}</textarea>
+    </label>
+
+    <button class="btn btn-big" type="submit">Confirm appointment</button>
+    <p class="fineprint">
+      Reach the clinic 10 minutes early. To reschedule, call {{ clinic.phone }}.
+    </p>
+  </fieldset>
+</form>
+{% endblock %}
