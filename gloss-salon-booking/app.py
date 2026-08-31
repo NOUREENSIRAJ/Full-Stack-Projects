@@ -1,160 +1,123 @@
-"""Gloss — salon chair booking.
+"""Wellcrest — outpatient (OPD) appointment booking.
 
-Slots are duration-aware: a 90-minute colour blocks three half-hour slots
-on that stylist's chair, so nothing double-books.
-
-Run:  python app.py   ->  http://127.0.0.1:5002
+Run:  python app.py   ->  http://127.0.0.1:5001
 """
 
 import os
+import re
 import sqlite3
 from datetime import date, datetime, timedelta
 
 from flask import Flask, flash, g, redirect, render_template, request, url_for
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(APP_DIR, "gloss.db")
+DB_PATH = os.path.join(APP_DIR, "wellcrest.db")
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "gloss-dev-key-change-me")
+app.secret_key = os.environ.get("SECRET_KEY", "wellcrest-dev-key-change-me")
 
-# --- Salon data ------------------------------------------------------------
+# --- Clinic identity -------------------------------------------------------
+# Change anything here and it updates across every page.
 
-SERVICES = {
-    "cut-blowdry": {
-        "id": "cut-blowdry",
-        "name": "Cut & blow-dry",
-        "group": "Hair",
-        "minutes": 60,
-        "price": 1400,
-        "blurb": "Consultation, wash, precision cut, finished with a smooth blow-dry.",
+CLINIC = {
+    "name": "Wellcrest",
+    "tagline": "Outpatient appointments, booked in under a minute.",
+    "address": "DHA Phase 4, Karachi",
+    "phone": "021-3111 4400",
+    "phone_dial": "+922131114400",
+    "hours": "Mon–Sat, 9:00 AM – 6:40 PM. Closed Sunday.",
+    "currency": "Rs",
+}
+
+# --- Clinic data -----------------------------------------------------------
+
+DOCTORS = {
+    "dr-noureen": {
+        "id": "dr-noureen",
+        "name": "Dr. Noureen Siddiqui",
+        "dept": "Cardiology",
+        "code": "CARD",
+        "qual": "MBBS, FCPS, MD (Cardiology)",
+        "room": "B-204",
+        "fee": 900,
+        "years": 14,
+        "note": "Chest pain, blood pressure, post-angioplasty follow-up.",
     },
-    "gloss-colour": {
-        "id": "gloss-colour",
-        "name": "Full colour & gloss",
-        "group": "Hair",
-        "minutes": 150,
-        "price": 4200,
-        "blurb": "Root-to-tip colour with a shine gloss sealed in at the basin.",
+    "dr-usman": {
+        "id": "dr-usman",
+        "name": "Dr. Usman Farooq",
+        "dept": "Dermatology",
+        "code": "DERM",
+        "qual": "MBBS, MD (Skin & VD)",
+        "room": "A-118",
+        "fee": 700,
+        "years": 9,
+        "note": "Acne, eczema, hair fall, allergy patch testing.",
     },
-    "balayage": {
-        "id": "balayage",
-        "name": "Balayage",
-        "group": "Hair",
-        "minutes": 180,
-        "price": 5600,
-        "blurb": "Hand-painted lightening, toned to your base and blow-dried out.",
+    "dr-sana": {
+        "id": "dr-sana",
+        "name": "Dr. Sana Khan",
+        "dept": "Paediatrics",
+        "code": "PAED",
+        "qual": "MBBS, DCH",
+        "room": "G-012",
+        "fee": 650,
+        "years": 11,
+        "note": "Vaccination, growth checks, fever and cough in children.",
     },
-    "keratin": {
-        "id": "keratin",
-        "name": "Keratin smoothing",
-        "group": "Hair",
-        "minutes": 120,
-        "price": 4800,
-        "blurb": "Frizz treatment that holds for eight to twelve weeks.",
+    "dr-bilal": {
+        "id": "dr-bilal",
+        "name": "Dr. Bilal Ansari",
+        "dept": "Orthopaedics",
+        "code": "ORTH",
+        "qual": "MBBS, MS (Orthopaedics)",
+        "room": "C-305",
+        "fee": 850,
+        "years": 17,
+        "note": "Knee and back pain, fractures, sports injury review.",
     },
-    "facial": {
-        "id": "facial",
-        "name": "Deep-clean facial",
-        "group": "Skin",
-        "minutes": 60,
-        "price": 2200,
-        "blurb": "Steam, extraction, mask and massage for congested skin.",
-    },
-    "threading": {
-        "id": "threading",
-        "name": "Brow shaping",
-        "group": "Skin",
-        "minutes": 30,
-        "price": 350,
-        "blurb": "Threaded and mapped to your face, tinted on request.",
-    },
-    "gel-mani": {
-        "id": "gel-mani",
-        "name": "Gel manicure",
-        "group": "Nails",
-        "minutes": 60,
-        "price": 1200,
-        "blurb": "Shaped, cuticle work, and a gel colour cured to last three weeks.",
-    },
-    "pedi": {
-        "id": "pedi",
-        "name": "Spa pedicure",
-        "group": "Nails",
-        "minutes": 90,
-        "price": 1800,
-        "blurb": "Soak, scrub, callus work and a leg massage. Polish optional.",
+    "dr-hira": {
+        "id": "dr-hira",
+        "name": "Dr. Hira Shaikh",
+        "dept": "General Medicine",
+        "code": "GMED",
+        "qual": "MBBS, MD",
+        "room": "A-101",
+        "fee": 500,
+        "years": 7,
+        "note": "Fever, diabetes and thyroid review, general check-up.",
     },
 }
 
-GROUP_ORDER = ["Hair", "Skin", "Nails"]
+MORNING = ["09:00", "09:20", "09:40", "10:00", "10:20", "10:40", "11:00", "11:20"]
+EVENING = ["16:00", "16:20", "16:40", "17:00", "17:20", "17:40", "18:00", "18:20"]
+SESSIONS = [("Morning OPD", MORNING), ("Evening OPD", EVENING)]
 
-STYLISTS = {
-    "noureen": {
-        "id": "noureen",
-        "name": "Noureen",
-        "initials": "N",
-        "title": "Creative director",
-        "does": ["cut-blowdry", "gloss-colour", "balayage", "keratin"],
-        "bio": "Fifteen years behind the chair. Curls, fringes and warm blondes.",
-    },
-    "ariba": {
-        "id": "ariba",
-        "name": "Ariba",
-        "initials": "A",
-        "title": "Senior stylist",
-        "does": ["cut-blowdry", "gloss-colour", "keratin"],
-        "bio": "Sharp bobs and low-maintenance colour that grows out cleanly.",
-    },
-    "hira": {
-        "id": "hira",
-        "name": "Hira",
-        "initials": "H",
-        "title": "Skin therapist",
-        "does": ["facial", "threading"],
-        "bio": "Trained in acne and pigmentation care. Very gentle hands.",
-    },
-    "zainab": {
-        "id": "zainab",
-        "name": "Zainab",
-        "initials": "Z",
-        "title": "Nail artist",
-        "does": ["gel-mani", "pedi", "threading"],
-        "bio": "Freehand art, chrome finishes, and the neatest cuticle work here.",
-    },
-}
+REASONS = [
+    "First visit",
+    "Follow-up",
+    "Report review",
+    "Prescription refill",
+    "Second opinion",
+]
 
-OPEN_HOUR, CLOSE_HOUR, STEP = 10, 19, 30  # 10:00 to 19:00, half-hour grid
-
-
-def slot_grid():
-    times, cursor = [], datetime(2000, 1, 1, OPEN_HOUR, 0)
-    end = datetime(2000, 1, 1, CLOSE_HOUR, 0)
-    while cursor < end:
-        times.append(cursor.strftime("%H:%M"))
-        cursor += timedelta(minutes=STEP)
-    return times
-
-
-SLOTS = slot_grid()
 
 # --- Database --------------------------------------------------------------
 
 SCHEMA = """
-CREATE TABLE IF NOT EXISTS bookings (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    ref         TEXT NOT NULL UNIQUE,
-    service_id  TEXT NOT NULL,
-    stylist_id  TEXT NOT NULL,
-    slot_date   TEXT NOT NULL,
-    start_time  TEXT NOT NULL,
-    end_time    TEXT NOT NULL,
-    minutes     INTEGER NOT NULL,
-    price       INTEGER NOT NULL,
-    client      TEXT NOT NULL,
-    phone       TEXT NOT NULL,
-    notes       TEXT,
-    created_at  TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS appointments (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    token      TEXT NOT NULL,
+    doctor_id  TEXT NOT NULL,
+    slot_date  TEXT NOT NULL,
+    slot_time  TEXT NOT NULL,
+    patient    TEXT NOT NULL,
+    age        INTEGER,
+    phone      TEXT NOT NULL,
+    reason     TEXT,
+    notes      TEXT,
+    created_at TEXT NOT NULL,
+    UNIQUE (doctor_id, slot_date, slot_time)
 );
 """
 
@@ -180,77 +143,54 @@ def init_db():
     con.close()
 
 
-# --- Availability ----------------------------------------------------------
+# --- Helpers ---------------------------------------------------------------
 
 
-def salon_days(count=7):
-    """Next `count` open days (closed Monday)."""
+def clinic_days(count=7):
+    """Next `count` days the OPD runs (closed Sunday)."""
     days, cursor = [], date.today()
     while len(days) < count:
-        if cursor.weekday() != 0:
+        if cursor.weekday() != 6:
             days.append(cursor)
         cursor += timedelta(days=1)
     return days
 
 
-def blocked_slots(stylist_id, day):
-    """Every half-hour slot already consumed on that stylist's chair."""
+def taken_slots(doctor_id, day):
     rows = get_db().execute(
-        "SELECT start_time, minutes FROM bookings WHERE stylist_id = ? AND slot_date = ?",
-        (stylist_id, day),
+        "SELECT slot_time FROM appointments WHERE doctor_id = ? AND slot_date = ?",
+        (doctor_id, day),
     ).fetchall()
-    taken = set()
-    for r in rows:
-        start = SLOTS.index(r["start_time"]) if r["start_time"] in SLOTS else None
-        if start is None:
-            continue
-        for i in range(start, start + max(1, r["minutes"] // STEP)):
-            if i < len(SLOTS):
-                taken.add(SLOTS[i])
-    return taken
+    return {r["slot_time"] for r in rows}
 
 
-def open_starts(stylist_id, day, minutes):
-    """Start times where the whole treatment fits before closing."""
-    need = max(1, minutes // STEP)
-    taken = blocked_slots(stylist_id, day)
-    starts = []
-    for i, t in enumerate(SLOTS):
-        window = SLOTS[i : i + need]
-        fits = len(window) == need and not any(w in taken for w in window)
-        starts.append({"time": t, "open": fits})
-    return starts
+def booked_count(doctor_id, day):
+    return len(taken_slots(doctor_id, day))
 
 
-def end_time(start, minutes):
-    dt = datetime.strptime(start, "%H:%M") + timedelta(minutes=minutes)
-    return dt.strftime("%H:%M")
-
-
-def make_ref():
-    n = get_db().execute("SELECT COUNT(*) c FROM bookings").fetchone()["c"]
-    return f"GL{datetime.now().strftime('%y%m')}{n + 1:03d}"
+def make_token(doctor, day):
+    n = get_db().execute(
+        "SELECT COUNT(*) c FROM appointments WHERE doctor_id = ? AND slot_date = ?",
+        (doctor["id"], day),
+    ).fetchone()["c"]
+    return f"{doctor['code']}-{day.replace('-', '')[4:]}-{n + 1:02d}"
 
 
 @app.template_filter("pretty_date")
 def pretty_date(value):
-    return datetime.strptime(value, "%Y-%m-%d").strftime("%a %d %b")
+    d = datetime.strptime(value, "%Y-%m-%d").date()
+    return d.strftime("%a %d %b %Y")
 
 
-@app.template_filter("pkr")
-def pkr(amount):
-    """1400 -> 'PKR 1,400'"""
-    return f"PKR {int(amount):,}"
+@app.template_filter("rs")
+def rs(value):
+    """900 -> 'Rs 900'   |   12500 -> 'Rs 12,500'"""
+    return f"{CLINIC['currency']} {int(value):,}"
 
 
-@app.template_filter("as_hours")
-def as_hours(mins):
-    h, m = divmod(mins, 60)
-    if h and m:
-        return f"{h} hr {m} min"
-    if h:
-        return f"{h} hr"
-    return f"{m} min"
+@app.context_processor
+def inject_clinic():
+    return {"clinic": CLINIC}
 
 
 # --- Routes ----------------------------------------------------------------
@@ -258,122 +198,119 @@ def as_hours(mins):
 
 @app.route("/")
 def index():
-    menu = [
-        (grp, [s for s in SERVICES.values() if s["group"] == grp]) for grp in GROUP_ORDER
-    ]
-    return render_template("index.html", menu=menu, stylists=STYLISTS.values())
+    today = date.today().isoformat()
+    total = len(MORNING) + len(EVENING)
+    doctors = []
+    for doc in DOCTORS.values():
+        free = total - booked_count(doc["id"], today)
+        doctors.append({**doc, "free_today": free, "total_today": total})
+    return render_template("index.html", doctors=doctors, today=today)
 
 
-@app.route("/book/<service_id>", methods=["GET", "POST"])
-def book(service_id):
-    service = SERVICES.get(service_id)
-    if service is None:
+@app.route("/doctor/<doctor_id>", methods=["GET", "POST"])
+def book(doctor_id):
+    doctor = DOCTORS.get(doctor_id)
+    if doctor is None:
         return render_template("not_found.html"), 404
 
-    team = [s for s in STYLISTS.values() if service_id in s["does"]]
-    days = salon_days()
+    days = clinic_days()
     day_values = [d.isoformat() for d in days]
-
     chosen_day = request.values.get("day") or day_values[0]
     if chosen_day not in day_values:
         chosen_day = day_values[0]
-    chosen_stylist = request.values.get("stylist") or team[0]["id"]
-    if chosen_stylist not in [s["id"] for s in team]:
-        chosen_stylist = team[0]["id"]
 
     if request.method == "POST":
         form = request.form
-        start = form.get("start_time", "")
-        client = form.get("client", "").strip()
+        slot = form.get("slot_time", "")
+        patient = form.get("patient", "").strip()
         phone = form.get("phone", "").strip()
+        digits = re.sub(r"\D", "", phone)
 
         errors = []
-        if not client:
-            errors.append("Tell us who the appointment is for.")
-        if len(phone) < 10 or not phone.replace("+", "").replace(" ", "").isdigit():
-            errors.append("Add a 10-digit mobile number for the reminder text.")
-        if not start:
-            errors.append("Choose a start time.")
-        else:
-            avail = {s["time"]: s["open"] for s in open_starts(chosen_stylist, chosen_day, service["minutes"])}
-            if not avail.get(start):
-                errors.append(f"{start} no longer fits a {as_hours(service['minutes'])} appointment. Pick another time.")
+        if not patient:
+            errors.append("Enter the patient's full name.")
+        if not (10 <= len(digits) <= 13):
+            errors.append(
+                "Enter a valid mobile number, e.g. 0300 1234567, "
+                "so the clinic can reach you."
+            )
+        if not slot:
+            errors.append("Pick a time slot from the schedule.")
+        elif slot in taken_slots(doctor_id, chosen_day):
+            errors.append(f"{slot} was just taken. Pick another slot.")
 
         if errors:
             for e in errors:
                 flash(e, "error")
         else:
-            ref = make_ref()
+            token = make_token(doctor, chosen_day)
             db = get_db()
-            db.execute(
-                """INSERT INTO bookings
-                   (ref, service_id, stylist_id, slot_date, start_time, end_time,
-                    minutes, price, client, phone, notes, created_at)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (
-                    ref,
-                    service_id,
-                    chosen_stylist,
-                    chosen_day,
-                    start,
-                    end_time(start, service["minutes"]),
-                    service["minutes"],
-                    service["price"],
-                    client,
-                    phone,
-                    form.get("notes", "").strip(),
-                    datetime.now().isoformat(timespec="seconds"),
-                ),
-            )
-            db.commit()
-            return redirect(url_for("booked", ref=ref))
+            try:
+                db.execute(
+                    """INSERT INTO appointments
+                       (token, doctor_id, slot_date, slot_time, patient, age,
+                        phone, reason, notes, created_at)
+                       VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                    (
+                        token,
+                        doctor_id,
+                        chosen_day,
+                        slot,
+                        patient,
+                        form.get("age") or None,
+                        phone,
+                        form.get("reason", "First visit"),
+                        form.get("notes", "").strip(),
+                        datetime.now().isoformat(timespec="seconds"),
+                    ),
+                )
+                db.commit()
+            except sqlite3.IntegrityError:
+                flash(f"{slot} was just taken. Pick another slot.", "error")
+            else:
+                return redirect(url_for("confirmed", token=token))
 
+    booked = taken_slots(doctor_id, chosen_day)
     return render_template(
         "book.html",
-        service=service,
-        team=team,
+        doctor=doctor,
         days=days,
         chosen_day=chosen_day,
-        chosen_stylist=chosen_stylist,
-        stylist=STYLISTS[chosen_stylist],
-        starts=open_starts(chosen_stylist, chosen_day, service["minutes"]),
+        sessions=SESSIONS,
+        booked=booked,
+        reasons=REASONS,
         form=request.form,
     )
 
 
-@app.route("/booked/<ref>")
-def booked(ref):
-    row = get_db().execute("SELECT * FROM bookings WHERE ref = ?", (ref,)).fetchone()
+@app.route("/confirmed/<token>")
+def confirmed(token):
+    row = get_db().execute(
+        "SELECT * FROM appointments WHERE token = ?", (token,)
+    ).fetchone()
     if row is None:
         return render_template("not_found.html"), 404
-    return render_template(
-        "booked.html",
-        b=row,
-        service=SERVICES[row["service_id"]],
-        stylist=STYLISTS[row["stylist_id"]],
-    )
+    return render_template("confirmed.html", a=row, doctor=DOCTORS.get(row["doctor_id"]))
 
 
-@app.route("/diary")
-def diary():
+@app.route("/appointments")
+def appointments():
     rows = get_db().execute(
-        "SELECT * FROM bookings ORDER BY slot_date, start_time"
+        "SELECT * FROM appointments ORDER BY slot_date, slot_time"
     ).fetchall()
-    return render_template("diary.html", rows=rows, services=SERVICES, stylists=STYLISTS)
+    return render_template("appointments.html", rows=rows, doctors=DOCTORS)
 
 
-@app.route("/diary/<int:booking_id>/cancel", methods=["POST"])
-def cancel(booking_id):
+@app.route("/appointments/<int:appt_id>/cancel", methods=["POST"])
+def cancel(appt_id):
     db = get_db()
-    db.execute("DELETE FROM bookings WHERE id = ?", (booking_id,))
+    db.execute("DELETE FROM appointments WHERE id = ?", (appt_id,))
     db.commit()
-    flash("Appointment cancelled. The chair is free again.", "ok")
-    return redirect(url_for("diary"))
+    flash("Appointment cancelled. The slot is open again.", "ok")
+    return redirect(url_for("appointments"))
 
 
-# Runs on import too, so the table exists when a WSGI server starts the app.
 init_db()
 
-
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=int(os.environ.get("PORT", 5001)))
