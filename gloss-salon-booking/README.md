@@ -16,12 +16,12 @@ options. Times too close to closing are greyed out automatically, because a
 
 The service menu — every treatment shows its price and how long it takes.
 
-![The service menu] <img width="1868" height="898" alt="Screenshot" src="https://github.com/user-attachments/assets/4ebd5ecc-2379-47b1-822c-a3936416405c" />
+### [The service menu] <img width="1868" height="898" alt="Screenshot" src="https://github.com/user-attachments/assets/4ebd5ecc-2379-47b1-822c-a3936416405c" />
 
 
 Confirmation after booking, with the reference, the chair, and the time held.
 
-![Booking confirmation] <img width="1845" height="882" alt="Screenshot png1" src="https://github.com/user-attachments/assets/3b4ae28c-9e99-4a7f-9932-b67ab77e25a8" />
+### [Booking confirmation] <img width="1845" height="882" alt="Screenshot png1" src="https://github.com/user-attachments/assets/3b4ae28c-9e99-4a7f-9932-b67ab77e25a8" />
 
 
 ## Built with
