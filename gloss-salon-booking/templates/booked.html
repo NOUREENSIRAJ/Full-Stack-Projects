@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}You're booked{% endblock %}
+{% block body %}
+<section class="card-conf">
+  <p class="kicker">Booked &middot; {{ b.ref }}</p>
+  <h1>See you {{ b.slot_date | pretty_date }} at {{ b.start_time }}.</h1>
+  <dl class="conf-grid">
+    <div><dt>Treatment</dt><dd>{{ service.name }}</dd></div>
+    <div><dt>Stylist</dt><dd>{{ stylist.name }}, {{ stylist.title | lower }}</dd></div>
+    <div><dt>Time</dt><dd>{{ b.start_time }}&ndash;{{ b.end_time }} ({{ b.minutes | as_hours }})</dd></div>
+    <div><dt>Price</dt><dd>PKR {{ '{:,}'.format(b.price) }}</dd></div>
+    <div><dt>Name</dt><dd>{{ b.client }}</dd></div>
+    <div><dt>Mobile</dt><dd>{{ b.phone }}</dd></div>
+  </dl>
+  {% if b.notes %}<p class="conf-notes"><span>You told us</span>{{ b.notes }}</p>{% endif %}
+  <div class="conf-actions">
+    <a class="cta cta--inline" href="{{ url_for('diary') }}">See the diary</a>
+    <a class="ghost" href="{{ url_for('index') }}">Book something else</a>
+  </div>
+</section>
+{% endblock %}

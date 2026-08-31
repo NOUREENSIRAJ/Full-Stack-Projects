@@ -1,0 +1,10 @@
+﻿{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block body %}
+<div class="blank">
+  <p>That treatment isn't on the menu any more.</p>
+  <a class="cta cta--inline" href="{{ url_for('index') }}">Back to the menu</a>
+</div>
+{% endblock %}
+
+

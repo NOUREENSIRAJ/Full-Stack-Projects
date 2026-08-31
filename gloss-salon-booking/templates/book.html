@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ service.name }}{% endblock %}
+{% block body %}
+<a class="back" href="{{ url_for('index') }}">&larr; Back to the menu</a>
+
+<section class="service-head">
+  <div>
+    <p class="kicker">{{ service.group }}</p>
+    <h1>{{ service.name }}</h1>
+    <p class="service-head__blurb">{{ service.blurb }}</p>
+  </div>
+  <div class="service-head__facts">
+    <p class="fact"><span>PKR {{ '{:,}'.format(service.price) }}</span>price</p>
+    <p class="fact"><span>{{ service.minutes | as_hours }}</span>in the chair</p>
+  </div>
+</section>
+
+<form method="get" class="picker" aria-label="Choose stylist and day">
+  <div class="picker__group">
+    <p class="picker__label">Stylist</p>
+    <div class="chips">
+      {% for s in team %}
+      <button class="chip {% if s.id == chosen_stylist %}is-on{% endif %}" name="stylist" value="{{ s.id }}">
+        <span class="chip__badge" aria-hidden="true">{{ s.initials }}</span>
+        <span class="chip__name">{{ s.name }}</span>
+        <span class="chip__title">{{ s.title }}</span>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+  <input type="hidden" name="day" value="{{ chosen_day }}">
+</form>
+
+<form method="get" class="picker picker--days" aria-label="Choose a day">
+  <input type="hidden" name="stylist" value="{{ chosen_stylist }}">
+  <p class="picker__label">Day</p>
+  <div class="days">
+    {% for d in days %}
+      {% set iso = d.isoformat() %}
+      <button class="dayb {% if iso == chosen_day %}is-on{% endif %}" name="day" value="{{ iso }}">
+        <span class="dayb__dow">{{ d.strftime('%a') }}</span>
+        <span class="dayb__num">{{ d.strftime('%d') }}</span>
+      </button>
+    {% endfor %}
+  </div>
+</form>
+
+<form method="post" class="checkout">
+  <input type="hidden" name="day" value="{{ chosen_day }}">
+  <input type="hidden" name="stylist" value="{{ chosen_stylist }}">
+
+  <section>
+    <h2 class="course__title">{{ stylist.name }}'s chair &mdash; {{ chosen_day | pretty_date }}</h2>
+    <p class="hint">Times that fit the full {{ service.minutes | as_hours }} are selectable.</p>
+    <div class="times">
+      {% for s in starts %}
+      <label class="time {% if not s.open %}time--closed{% endif %}">
+        <input type="radio" name="start_time" value="{{ s.time }}" {% if not s.open %}disabled{% endif %}
+               {% if form.get('start_time') == s.time %}checked{% endif %}>
+        <span>{{ s.time }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="details">
+    <h2 class="course__title">Your details</h2>
+    <div class="field">
+      <label for="client">Name</label>
+      <input id="client" name="client" required value="{{ form.get('client','') }}" autocomplete="name">
+    </div>
+    <div class="field">
+      <label for="phone">Mobile number</label>
+      <input id="phone" name="phone" required inputmode="tel" value="{{ form.get('phone','') }}" autocomplete="tel">
+    </div>
+    <div class="field">
+      <label for="notes">Anything we should know <span class="opt">optional</span></label>
+      <textarea id="notes" name="notes" rows="3" placeholder="Allergies, the colour you had last time, a photo reference you'll bring.">{{ form.get('notes','') }}</textarea>
+    </div>
+    <button class="cta" type="submit">Book this chair</button>
+    <p class="hint">No deposit. Pay at the desk when you're done.</p>
+  </section>
+</form>
+{% endblock %}

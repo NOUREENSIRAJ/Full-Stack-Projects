@@ -1,0 +1,43 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Gloss{% endblock %} &mdash; Gloss Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="{{ url_for('index') }}">
+    <span class="mark__word">Gloss</span>
+    <span class="mark__rule" aria-hidden="true"></span>
+    <span class="mark__sub">Hair &middot; Skin &middot; Nails</span>
+  </a>
+  <nav class="top__nav">
+    <a href="{{ url_for('index') }}">The menu</a>
+    <a href="{{ url_for('diary') }}">Diary</a>
+  </nav>
+</header>
+
+<main class="page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="notes">
+        {% for cat, msg in messages %}<li class="note note--{{ cat }}">{{ msg }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  {% block body %}{% endblock %}
+</main>
+
+<footer class="foot">
+  <p><em>Gloss</em> &middot; Dha Ph6 &middot; Open Tuesday to Sunday, 10am&ndash;7pm</p>
+  <p>Running late? Call 03352114393 &mdash; we hold the chair for 15 minutes.</p>
+</footer>
+</body>
+</html>
+
+

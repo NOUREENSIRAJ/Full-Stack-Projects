@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Diary{% endblock %}
+{% block body %}
+<h1 class="page-title">The diary</h1>
+{% if not rows %}
+<div class="blank">
+  <p>Nothing in the book yet.</p>
+  <a class="cta cta--inline" href="{{ url_for('index') }}">Open the menu</a>
+</div>
+{% else %}
+<ul class="diary">
+  {% for r in rows %}
+  <li class="dentry">
+    <div class="dentry__when">
+      <span class="dentry__date">{{ r.slot_date | pretty_date }}</span>
+      <span class="dentry__time">{{ r.start_time }}&ndash;{{ r.end_time }}</span>
+    </div>
+    <div class="dentry__what">
+      <h3>{{ services[r.service_id].name }}</h3>
+      <p>{{ r.client }} &middot; {{ r.phone }}</p>
+      {% if r.notes %}<p class="dentry__note">{{ r.notes }}</p>{% endif %}
+    </div>
+    <div class="dentry__who">
+      <span class="person__badge" aria-hidden="true">{{ stylists[r.stylist_id].initials }}</span>
+      <span>{{ stylists[r.stylist_id].name }}</span>
+    </div>
+    <div class="dentry__end">
+      <span class="dentry__price">PKR {{ '{:,}'.format(r.price) }}</span>
+      <form method="post" action="{{ url_for('cancel', booking_id=r.id) }}">
+        <button class="unbook">Cancel</button>
+      </form>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
