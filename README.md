@@ -4,13 +4,17 @@ Full-stack web apps built with Flask, SQLite and Jinja templates.
 
 ## Projects: What it does 
 
-luna-spice:Restaurant table reservations with per-room capacity, so a room fills up instead of overbooking	Flask · SQLite · Jinja · CSS
+## luna-spice: 
+Restaurant table reservations with per-room capacity, so a room fills up instead of overbooking	Flask · SQLite · Jinja · CSS
 
-gloss-salon-booking:Salon appointment booking with services and time slots	Flask · SQLite · Jinja · CSS
+## gloss-salon-booking
+Salon appointment booking with services and time slots	Flask · SQLite · Jinja · CSS
 
-gloss-salon-static:Static front-end version of the Gloss salon site	HTML · CSS
+## gloss-salon-static
+Static front-end version of the Gloss salon site	HTML · CSS
 
-medislot:Doctor appointment booking	Flask · SQLite · Jinja · CSS
+## WellCrest
+Doctor appointment booking	Flask · SQLite · Jinja · CSS
 
 Each project folder has its own README, screenshots and setup instructions.
 
