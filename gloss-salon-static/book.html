@@ -1,0 +1,226 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book &mdash; Gloss Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="index.html">
+    <span class="mark__word">Gloss</span>
+    <span class="mark__rule" aria-hidden="true"></span>
+    <span class="mark__sub">Hair &middot; Skin &middot; Nails</span>
+  </a>
+  <nav class="top__nav">
+    <a href="index.html">The menu</a>
+    <a href="diary.html">Diary</a>
+  </nav>
+</header>
+
+<main class="page">
+  <div id="flash"></div>
+  <div id="root"></div>
+</main>
+
+<footer class="foot">
+  <p><em>Gloss</em> &middot; Dha Ph6 &middot; Open Tuesday to Sunday, 10am&ndash;7pm</p>
+  <p>Running late? Call 03352114393 &mdash; we hold the chair for 15 minutes.</p>
+</footer>
+
+<script src="static/app.js"></script>
+<script>
+var root = document.getElementById("root");
+var service = SERVICES[param("service")];
+
+if (!service) {
+  document.title = "Not found â€” Gloss Salon";
+  root.innerHTML =
+    '<div class="blank">' +
+    "<p>That treatment isn't on the menu any more.</p>" +
+    '<a class="cta cta--inline" href="index.html">Back to the menu</a>' +
+    "</div>";
+} else {
+  document.title = service.name + " â€” Gloss Salon";
+
+  var team = Object.keys(STYLISTS)
+    .map(function (k) { return STYLISTS[k]; })
+    .filter(function (s) { return s.does.indexOf(service.id) !== -1; });
+
+  var days = salonDays().map(isoDate);
+  var chosenDay = days[0];
+  var chosenStylist = team[0].id;
+  var chosenTime = "";
+  var draft = { client: "", phone: "", notes: "" };
+
+  function render(errors) {
+    var stylist = STYLISTS[chosenStylist];
+    var starts = openStarts(chosenStylist, chosenDay, service.minutes);
+
+    root.innerHTML =
+      '<a class="back" href="index.html">&larr; Back to the menu</a>' +
+
+      '<section class="service-head"><div>' +
+      '<p class="kicker">' + esc(service.group) + "</p>" +
+      "<h1>" + esc(service.name) + "</h1>" +
+      '<p class="service-head__blurb">' + esc(service.blurb) + "</p>" +
+      '</div><div class="service-head__facts">' +
+      '<p class="fact"><span>' + esc(pkr(service.price)) + "</span>price</p>" +
+      '<p class="fact"><span>' + esc(asHours(service.minutes)) + "</span>in the chair</p>" +
+      "</div></section>" +
+
+      '<div class="picker"><div class="picker__group">' +
+      '<p class="picker__label">Stylist</p><div class="chips">' +
+      team.map(function (s) {
+        return (
+          '<button type="button" data-stylist="' + esc(s.id) + '" class="chip' +
+          (s.id === chosenStylist ? " is-on" : "") + '">' +
+          '<span class="chip__badge" aria-hidden="true">' + esc(s.initials) + "</span>" +
+          '<span class="chip__name">' + esc(s.name) + "</span>" +
+          '<span class="chip__title">' + esc(s.title) + "</span>" +
+          "</button>"
+        );
+      }).join("") +
+      "</div></div></div>" +
+
+      '<div class="picker picker--days">' +
+      '<p class="picker__label">Day</p><div class="days">' +
+      days.map(function (iso) {
+        var d = fromIso(iso);
+        return (
+          '<button type="button" data-day="' + esc(iso) + '" class="dayb' +
+          (iso === chosenDay ? " is-on" : "") + '">' +
+          '<span class="dayb__dow">' + d.toLocaleDateString("en-GB", { weekday: "short" }) + "</span>" +
+          '<span class="dayb__num">' + String(d.getDate()).padStart(2, "0") + "</span>" +
+          "</button>"
+        );
+      }).join("") +
+      "</div></div>" +
+
+      '<form class="checkout" id="checkout"><section>' +
+      '<h2 class="course__title">' + esc(stylist.name) + "'s chair &mdash; " + esc(prettyDate(chosenDay)) + "</h2>" +
+      '<p class="hint">Times that fit the full ' + esc(asHours(service.minutes)) + " are selectable.</p>" +
+      '<div class="times">' +
+      starts.map(function (s) {
+        return (
+          '<label class="time' + (s.open ? "" : " time--closed") + '">' +
+          '<input type="radio" name="start_time" value="' + esc(s.time) + '"' +
+          (s.open ? "" : " disabled") +
+          (chosenTime === s.time && s.open ? " checked" : "") + ">" +
+          "<span>" + esc(s.time) + "</span></label>"
+        );
+      }).join("") +
+      "</div></section>" +
+
+      '<section class="details"><h2 class="course__title">Your details</h2>' +
+      '<div class="field"><label for="client">Name</label>' +
+      '<input id="client" name="client" required autocomplete="name" value="' + esc(draft.client) + '"></div>' +
+      '<div class="field"><label for="phone">Mobile number</label>' +
+      '<input id="phone" name="phone" required inputmode="tel" autocomplete="tel" value="' + esc(draft.phone) + '"></div>' +
+      '<div class="field"><label for="notes">Anything we should know <span class="opt">optional</span></label>' +
+      '<textarea id="notes" name="notes" rows="3" placeholder="Allergies, the colour you had last time, a photo reference you\'ll bring.">' +
+      esc(draft.notes) + "</textarea></div>" +
+      '<button class="cta" type="submit">Book this chair</button>' +
+      '<p class="hint">No deposit. Pay at the desk when you\'re done.</p>' +
+      "</section></form>";
+
+    renderFlash((errors || []).map(function (e) { return { msg: e, cat: "error" }; }));
+
+    root.querySelectorAll("[data-stylist]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        chosenStylist = b.getAttribute("data-stylist");
+        chosenTime = "";
+        keepDraft();
+        render();
+      });
+    });
+    root.querySelectorAll("[data-day]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        chosenDay = b.getAttribute("data-day");
+        chosenTime = "";
+        keepDraft();
+        render();
+      });
+    });
+    root.querySelectorAll('input[name="start_time"]').forEach(function (r) {
+      r.addEventListener("change", function () { chosenTime = r.value; });
+    });
+
+    document.getElementById("checkout").addEventListener("submit", submit);
+  }
+
+  function keepDraft() {
+    var c = document.getElementById("client");
+    if (!c) return;
+    draft.client = c.value;
+    draft.phone = document.getElementById("phone").value;
+    draft.notes = document.getElementById("notes").value;
+  }
+
+  function submit(ev) {
+    ev.preventDefault();
+    keepDraft();
+    var picked = root.querySelector('input[name="start_time"]:checked');
+    var start = picked ? picked.value : "";
+    var client = draft.client.trim();
+    var phone = draft.phone.trim();
+
+    var errors = [];
+    if (!client) errors.push("Tell us who the appointment is for.");
+    var digits = phone.replace(/[+\s]/g, "");
+    if (digits.length < 10 || !/^\d+$/.test(digits))
+      errors.push("Add a 10-digit mobile number for the reminder text.");
+    if (!start) {
+      errors.push("Choose a start time.");
+    } else {
+      var avail = openStarts(chosenStylist, chosenDay, service.minutes).filter(function (s) {
+        return s.time === start && s.open;
+      });
+      if (!avail.length)
+        errors.push(start + " no longer fits a " + asHours(service.minutes) + " appointment. Pick another time.");
+    }
+
+    if (errors.length) {
+      chosenTime = start;
+      render(errors);
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    var list = loadBookings();
+    var ref = makeRef();
+    list.push({
+      id: Date.now(),
+      ref: ref,
+      service_id: service.id,
+      stylist_id: chosenStylist,
+      slot_date: chosenDay,
+      start_time: start,
+      end_time: endTime(start, service.minutes),
+      minutes: service.minutes,
+      price: service.price,
+      client: client,
+      phone: phone,
+      notes: draft.notes.trim(),
+      created_at: new Date().toISOString().slice(0, 19),
+    });
+
+    if (!saveBookings(list)) {
+      render(["Couldn't save the booking â€” your browser is blocking storage."]);
+      return;
+    }
+    window.location.href = "booked.html?ref=" + encodeURIComponent(ref);
+  }
+
+  render();
+}
+</script>
+</body>
+</html>
+
+
+

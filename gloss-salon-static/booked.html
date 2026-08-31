@@ -1,0 +1,77 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You're booked &mdash; Gloss Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="index.html">
+    <span class="mark__word">Gloss</span>
+    <span class="mark__rule" aria-hidden="true"></span>
+    <span class="mark__sub">Hair &middot; Skin &middot; Nails</span>
+  </a>
+  <nav class="top__nav">
+    <a href="index.html">The menu</a>
+    <a href="diary.html">Diary</a>
+  </nav>
+</header>
+
+<main class="page">
+  <div id="flash"></div>
+  <div id="root"></div>
+</main>
+
+<footer class="foot">
+  <p><em>Gloss</em> &middot; Dha Ph6 &middot; Open Tuesday to Sunday, 10am&ndash;7pm</p>
+  <p>Running late? Call 03352114393 &mdash; we hold the chair for 15 minutes.</p>
+</footer>
+
+<script src="static/app.js"></script>
+<script>
+var root = document.getElementById("root");
+var ref = param("ref");
+var b = loadBookings().filter(function (x) { return x.ref === ref; })[0];
+
+if (!b) {
+  document.title = "Not found â€” Gloss Salon";
+  root.innerHTML =
+    '<div class="blank">' +
+    "<p>That booking isn't in the diary any more.</p>" +
+    '<a class="cta cta--inline" href="index.html">Back to the menu</a>' +
+    "</div>";
+} else {
+  var service = SERVICES[b.service_id];
+  var stylist = STYLISTS[b.stylist_id];
+  root.innerHTML =
+    '<section class="card-conf">' +
+    '<p class="kicker">Booked &middot; ' + esc(b.ref) + "</p>" +
+    "<h1>See you " + esc(prettyDate(b.slot_date)) + " at " + esc(b.start_time) + ".</h1>" +
+    '<dl class="conf-grid">' +
+    "<div><dt>Treatment</dt><dd>" + esc(service ? service.name : b.service_id) + "</dd></div>" +
+    "<div><dt>Stylist</dt><dd>" +
+      esc(stylist ? stylist.name + ", " + stylist.title.toLowerCase() : b.stylist_id) +
+    "</dd></div>" +
+    "<div><dt>Time</dt><dd>" + esc(b.start_time) + "&ndash;" + esc(b.end_time) +
+      " (" + esc(asHours(b.minutes)) + ")</dd></div>" +
+    "<div><dt>Price</dt><dd>" + esc(pkr(b.price)) + "</dd></div>" +
+    "<div><dt>Name</dt><dd>" + esc(b.client) + "</dd></div>" +
+    "<div><dt>Mobile</dt><dd>" + esc(b.phone) + "</dd></div>" +
+    "</dl>" +
+    (b.notes ? '<p class="conf-notes"><span>You told us</span>' + esc(b.notes) + "</p>" : "") +
+    '<div class="conf-actions">' +
+    '<a class="cta cta--inline" href="diary.html">See the diary</a>' +
+    '<a class="ghost" href="index.html">Book something else</a>' +
+    "</div></section>";
+}
+</script>
+</body>
+</html>
+
+
+

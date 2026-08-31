@@ -1,0 +1,91 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The menu &mdash; Gloss Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="index.html">
+    <span class="mark__word">Gloss</span>
+    <span class="mark__rule" aria-hidden="true"></span>
+    <span class="mark__sub">Hair &middot; Skin &middot; Nails</span>
+  </a>
+  <nav class="top__nav">
+    <a href="index.html">The menu</a>
+    <a href="diary.html">Diary</a>
+  </nav>
+</header>
+
+<main class="page">
+  <div id="flash"></div>
+
+  <section class="opener">
+    <p class="kicker">Booking now &mdash; Tuesday to Sunday</p>
+    <h1>Pick the treatment.<br>We'll find the chair.</h1>
+    <p class="opener__lede">Every service below shows what it costs and how long you'll be with us, so the time you book is the time you'll actually need.</p>
+  </section>
+
+  <section class="menu" id="menu"></section>
+
+  <section class="team">
+    <h2 class="course__title">Who you'll sit with</h2>
+    <ul class="team__list" id="team"></ul>
+  </section>
+</main>
+
+<footer class="foot">
+  <p><em>Gloss</em> &middot; 14 Linden Street &middot; Open Tuesday to Sunday, 10am&ndash;7pm</p>
+  <p>Running late? Call 022 4001 8890 &mdash; we hold the chair for 15 minutes.</p>
+</footer>
+
+<script src="static/app.js"></script>
+<script>
+renderFlash(takeFlash());
+
+document.getElementById("menu").innerHTML = GROUP_ORDER.map(function (group) {
+  var items = Object.keys(SERVICES)
+    .map(function (k) { return SERVICES[k]; })
+    .filter(function (s) { return s.group === group; });
+  return (
+    '<div class="course">' +
+    '<h2 class="course__title">' + esc(group) + "</h2>" +
+    '<ul class="pricelist">' +
+    items.map(function (s) {
+      return (
+        '<li class="entry">' +
+        '<a class="entry__link" href="book.html?service=' + encodeURIComponent(s.id) + '">' +
+        '<span class="entry__name">' + esc(s.name) + "</span>" +
+        '<span class="entry__dots" aria-hidden="true"></span>' +
+        '<span class="entry__price">' + esc(pkr(s.price)) + "</span>" +
+        "</a>" +
+        '<p class="entry__blurb">' + esc(s.blurb) + "</p>" +
+        '<p class="entry__time">' + esc(asHours(s.minutes)) + " in the chair</p>" +
+        "</li>"
+      );
+    }).join("") +
+    "</ul></div>"
+  );
+}).join("");
+
+document.getElementById("team").innerHTML = Object.keys(STYLISTS).map(function (k) {
+  var s = STYLISTS[k];
+  return (
+    '<li class="person">' +
+    '<span class="person__badge" aria-hidden="true">' + esc(s.initials) + "</span>" +
+    "<div>" +
+    '<h3 class="person__name">' + esc(s.name) + "</h3>" +
+    '<p class="person__title">' + esc(s.title) + "</p>" +
+    '<p class="person__bio">' + esc(s.bio) + "</p>" +
+    "</div></li>"
+  );
+}).join("");
+</script>
+</body>
+</html>
+

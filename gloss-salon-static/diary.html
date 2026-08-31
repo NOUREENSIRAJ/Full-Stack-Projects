@@ -1,0 +1,99 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diary &mdash; Gloss Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="index.html">
+    <span class="mark__word">Gloss</span>
+    <span class="mark__rule" aria-hidden="true"></span>
+    <span class="mark__sub">Hair &middot; Skin &middot; Nails</span>
+  </a>
+  <nav class="top__nav">
+    <a href="index.html">The menu</a>
+    <a href="diary.html">Diary</a>
+  </nav>
+</header>
+
+<main class="page">
+  <div id="flash"></div>
+  <h1 class="page-title">The diary</h1>
+  <div id="root"></div>
+</main>
+
+<footer class="foot">
+  <p><em>Gloss</em> &middot; 14 Dha Ph6 &middot;t; Open Tuesday to Sunday, 10am&ndash;7pm</p>
+  <p>Running late? Call 03353114393 &mdash; we hold the chair for 15 minutes.</p>
+</footer>
+
+<script src="static/app.js"></script>
+<script>
+var root = document.getElementById("root");
+renderFlash(takeFlash());
+
+function draw() {
+  var rows = loadBookings().sort(function (a, b) {
+    return a.slot_date === b.slot_date
+      ? a.start_time.localeCompare(b.start_time)
+      : a.slot_date.localeCompare(b.slot_date);
+  });
+
+  if (!rows.length) {
+    root.innerHTML =
+      '<div class="blank"><p>Nothing in the book yet.</p>' +
+      '<a class="cta cta--inline" href="index.html">Open the menu</a></div>';
+    return;
+  }
+
+  root.innerHTML =
+    '<ul class="diary">' +
+    rows.map(function (r) {
+      var service = SERVICES[r.service_id];
+      var stylist = STYLISTS[r.stylist_id];
+      return (
+        '<li class="dentry">' +
+        '<div class="dentry__when">' +
+        '<span class="dentry__date">' + esc(prettyDate(r.slot_date)) + "</span>" +
+        '<span class="dentry__time">' + esc(r.start_time) + "&ndash;" + esc(r.end_time) + "</span>" +
+        "</div>" +
+        '<div class="dentry__what">' +
+        "<h3>" + esc(service ? service.name : r.service_id) + "</h3>" +
+        "<p>" + esc(r.client) + " &middot; " + esc(r.phone) + "</p>" +
+        (r.notes ? '<p class="dentry__note">' + esc(r.notes) + "</p>" : "") +
+        "</div>" +
+        '<div class="dentry__who">' +
+        '<span class="person__badge" aria-hidden="true">' + esc(stylist ? stylist.initials : "?") + "</span>" +
+        "<span>" + esc(stylist ? stylist.name : r.stylist_id) + "</span>" +
+        "</div>" +
+        '<div class="dentry__end">' +
+        '<span class="dentry__price">' + esc(pkr(r.price)) + "</span>" +
+        '<button class="unbook" data-cancel="' + esc(r.id) + '">Cancel</button>' +
+        "</div></li>"
+      );
+    }).join("") +
+    "</ul>";
+
+  root.querySelectorAll("[data-cancel]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var id = btn.getAttribute("data-cancel");
+      saveBookings(loadBookings().filter(function (b) { return String(b.id) !== id; }));
+      renderFlash([{ msg: "Appointment cancelled. The chair is free again.", cat: "ok" }]);
+      draw();
+    });
+  });
+}
+
+draw();
+</script>
+</body>
+</html>
+
+
+
