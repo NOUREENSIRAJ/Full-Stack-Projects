@@ -263,6 +263,7 @@ def cancel(res_id):
     return redirect(url_for("book_list"))
 
 
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True, port=5003)
