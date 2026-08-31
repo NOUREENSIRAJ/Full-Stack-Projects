@@ -6,18 +6,11 @@ Built with Flask and SQLite. Capacity is tracked per seating area per sitting,
 so a room fills up instead of accepting an endless number of bookings.
 
 ## Screenshots
-HOME PAGE 
+
+### The Rooms 
 <img width="1870" height="888" alt="Screenshot PNGG" src="https://github.com/user-attachments/assets/2ebee25e-ba49-40b9-b983-019925d8ff09" />
-CONFRIMATION
-<img width="1856" height="881" alt="Screenshot PNG2" src="https://github.com/user-attachments/assets/a4bdd55c-0770-43cb-a433-0cba4be54f61" />
-
-### The rooms
-
-
-
 ### Booking confirmation
-
-![Reservation confirmation page](screenshots/confirmation.png)
+<img width="1856" height="881" alt="Screenshot PNG2" src="https://github.com/user-attachments/assets/a4bdd55c-0770-43cb-a433-0cba4be54f61" />
 
 ## Seating areas
 
