@@ -7,11 +7,14 @@ so a room fills up instead of accepting an endless number of bookings.
 
 ## Screenshots
 
-### The Rooms 
-<img width="1870" height="888" alt="Screenshot PNGG" src="https://github.com/user-attachments/assets/2ebee25e-ba49-40b9-b983-019925d8ff09" />
+### Luna $ Spice home page
+<img width="1870" height="889" alt="Screenshot 2026-08-31 190431" src="https://github.com/user-attachments/assets/234c3b9b-72cf-47ec-8057-31fade3905ea" />
 
-### Booking confirmation
-<img width="1856" height="881" alt="Screenshot PNG2" src="https://github.com/user-attachments/assets/a4bdd55c-0770-43cb-a433-0cba4be54f61" />
+
+### Reservation Confirmation Page
+<img width="1870" height="889" alt="Screenshot 2026-08-31 190431" src="https://github.com/user-attachments/assets/0637aa06-a773-44ec-bed7-5ba61a900249" />
+
+
 
 ## Seating areas
 
