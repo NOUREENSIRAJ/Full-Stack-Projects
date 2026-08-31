@@ -9,6 +9,7 @@ so a room fills up instead of accepting an endless number of bookings.
 
 ### The Rooms 
 <img width="1870" height="888" alt="Screenshot PNGG" src="https://github.com/user-attachments/assets/2ebee25e-ba49-40b9-b983-019925d8ff09" />
+
 ### Booking confirmation
 <img width="1856" height="881" alt="Screenshot PNG2" src="https://github.com/user-attachments/assets/a4bdd55c-0770-43cb-a433-0cba4be54f61" />
 
