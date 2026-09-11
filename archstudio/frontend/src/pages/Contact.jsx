@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { API_URL } from '../config';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -21,7 +22,7 @@ function Contact() {
     setLoading(true);
     setStatus('');
     try {
-      await axios.post('http://localhost:5000/api/contact', formData);
+      await axios.post(`${API_URL}/api/contact`, formData);
       setStatus('success');
       setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (err) {
@@ -110,7 +111,7 @@ function Contact() {
                   <input
                     type="text"
                     name="name"
-                    placeholder="Reen S"
+                    placeholder="John Doe"
                     value={formData.name}
                     onChange={handleChange}
                     required
@@ -122,7 +123,7 @@ function Contact() {
                   <input
                     type="email"
                     name="email"
-                    placeholder="reens@example.com"
+                    placeholder="john@example.com"
                     value={formData.email}
                     onChange={handleChange}
                     required

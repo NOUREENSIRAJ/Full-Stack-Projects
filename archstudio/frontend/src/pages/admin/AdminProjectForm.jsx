@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Plus, X, Upload } from 'lucide-react';
+import { API_URL } from '../../config';
 
 function AdminProjectForm() {
   const { id } = useParams();
@@ -29,7 +30,7 @@ function AdminProjectForm() {
     }
 
     if (isEdit) {
-      axios.get(`http://localhost:5000/api/projects/${id}`)
+      axios.get(`${API_URL}/api/projects/${id}`)
         .then((res) => {
           const p = res.data;
           setFormData({
@@ -69,12 +70,12 @@ function AdminProjectForm() {
     formPayload.append('image', file);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/upload', formPayload, {
+      const res = await axios.post(`${API_URL}/api/upload`, formPayload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      handleImageChange(index, 'url', `http://localhost:5000${res.data.url}`);
+      handleImageChange(index, 'url', `${API_URL}${res.data.url}`);
     } catch (err) {
       setError('Image upload failed. Please try again.');
     } finally {
@@ -103,11 +104,11 @@ function AdminProjectForm() {
 
     try {
       if (isEdit) {
-        await axios.put(`http://localhost:5000/api/projects/${id}`, payload, {
+        await axios.put(`${API_URL}/api/projects/${id}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post('http://localhost:5000/api/projects', payload, {
+        await axios.post(`${API_URL}/api/projects`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }

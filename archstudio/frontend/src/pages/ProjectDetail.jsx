@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { MapPin, Ruler, ArrowLeft } from 'lucide-react';
+import { API_URL } from '../config';
 
 function ProjectDetail() {
   const { id } = useParams();
@@ -10,7 +11,7 @@ function ProjectDetail() {
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/projects/${id}`)
+    axios.get(`${API_URL}/api/projects/${id}`)
       .then((res) => {
         setProject(res.data);
         setActiveImage(0);

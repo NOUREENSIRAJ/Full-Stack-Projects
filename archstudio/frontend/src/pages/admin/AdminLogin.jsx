@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, Mail } from 'lucide-react';
+import { API_URL } from '../../config';
 
 function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post(`${API_URL}/api/auth/login`, {
         email,
         password,
       });

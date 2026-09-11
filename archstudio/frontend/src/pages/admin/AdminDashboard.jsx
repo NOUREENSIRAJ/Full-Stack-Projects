@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, Pencil, Trash2, LogOut } from 'lucide-react';
+import { API_URL } from '../../config';
 
 function AdminDashboard() {
   const [projects, setProjects] = useState([]);
@@ -18,7 +19,7 @@ function AdminDashboard() {
   }, []);
 
   const fetchProjects = () => {
-    axios.get('http://localhost:5000/api/projects')
+    axios.get(`${API_URL}/api/projects`)
       .then((res) => {
         setProjects(res.data);
         setLoading(false);
@@ -31,7 +32,7 @@ function AdminDashboard() {
 
     const token = localStorage.getItem('adminToken');
     try {
-      await axios.delete(`http://localhost:5000/api/projects/${id}`, {
+      await axios.delete(`${API_URL}/api/projects/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProjects(projects.filter((p) => p._id !== id));

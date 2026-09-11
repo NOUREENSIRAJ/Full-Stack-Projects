@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { MapPin, Ruler } from 'lucide-react';
+import { API_URL } from '../config';
 
 function Projects() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/projects')
+    axios.get(`${API_URL}/api/projects`)
       .then((res) => {
         setProjects(res.data);
         setLoading(false);
