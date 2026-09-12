@@ -77,7 +77,7 @@ function AdminProjectForm() {
       });
       handleImageChange(index, 'url', `${API_URL}${res.data.url}`);
     } catch (err) {
-      setError('Image upload failed. Please try again.');
+      setError('Image upload failed. Try pasting an Image URL instead.');
     } finally {
       setUploadingIndex(null);
     }
@@ -244,6 +244,17 @@ function AdminProjectForm() {
                       <X size={16} />
                     </button>
                   )}
+                </div>
+
+                <div className="relative">
+                  <span className="text-xs text-gray-500 mb-1 block">Or paste Image URL directly:</span>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/image.jpg"
+                    value={img.url}
+                    onChange={(e) => handleImageChange(index, 'url', e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 transition mb-2"
+                  />
                 </div>
 
                 <input
