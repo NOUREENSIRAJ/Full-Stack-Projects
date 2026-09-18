@@ -1,20 +1,23 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
 const app = express();
 
-app.use(cors({
-  origin: ["https://archstudio-frontend.vercel.app", "http://localhost:5173"],
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}));
+
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  if (req.method === "OPTIONS") return res.status(200).end();
+  next();
+});
+
 app.use(express.json());
 
-// ✅ MongoDB connection (Vercel ke liye)
+
 async function connectDB() {
   if (mongoose.connection.readyState === 1) return;
   await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
