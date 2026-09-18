@@ -14,6 +14,21 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// ✅ MongoDB connection (Vercel ke liye)
+async function connectDB() {
+  if (mongoose.connection.readyState === 1) return;
+  await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+}
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ message: "DB connection failed", error: err.message });
+  }
+});
+
 const projectRoutes = require('./routes/projectRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -28,10 +43,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/', (req, res) => {
   res.send('ArchStudio API is running...');
 });
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB Connected'))
-  .catch((err) => console.log('MongoDB Connection Error:', err));
 
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
